@@ -552,7 +552,7 @@ Cette route permet à l'utilisateur de voter pour un élément (post) spécifiqu
 
 > Prefix: `/comment`
 
-### Endpoint [POST] `/` 🔐
+### Endpoint [POST] `/:id` 🔐
 
 ## Description
 
