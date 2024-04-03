@@ -579,7 +579,7 @@ Cette route permet à un utilisateur de créer un nouveau commentaire sur un él
     "ok": true,
     "data": {
         "firstName": "John",
-        "content": "Contenu du commentaire"
+        "content": "Contenu du commentaire",
         "createdAt": Date.now()
     }
 }
