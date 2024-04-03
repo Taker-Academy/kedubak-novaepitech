@@ -564,6 +564,10 @@ Cette route permet à un utilisateur de créer un nouveau commentaire sur un él
 
 - **Authorization (String, required):** Token JWT pour l'authentification.
 
+### URL Paramètre
+
+- **id (String, required):** ID de l'élément (post) à commenter.
+
 ### Body
 
 - **content (String, required):** Contenu du commentaire.
