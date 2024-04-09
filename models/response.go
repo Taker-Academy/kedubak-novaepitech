@@ -1,3 +1,5 @@
+// models/response.go
+
 package models
 
 type Response struct {
