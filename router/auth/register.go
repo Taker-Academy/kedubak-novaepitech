@@ -52,7 +52,7 @@ func generateToken(user *models.User) (string, error) {
 		"id":  user.ID,
 		"exp": time.Now().Add(time.Hour * 24).Unix(),
 	})
-	return token.SignedString([]byte(os.Getenv("JWT_TOKEN")))
+	return token.SignedString([]byte(os.Getenv("JWT_SECRET_KEY")))
 }
 
 func RegisterHandler(c *fiber.Ctx, client *mongo.Client, ctx context.Context) error {
