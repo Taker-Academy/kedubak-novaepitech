@@ -10,12 +10,14 @@ import (
 	"github.com/Taker-Academy/kedubak-novaepitech/router/auth"
 	"github.com/Taker-Academy/kedubak-novaepitech/router/user"
 	"github.com/Taker-Academy/kedubak-novaepitech/router/post"
+	"github.com/Taker-Academy/kedubak-novaepitech/router/comment"
 )
 
 func AddGroups(app *fiber.App, client *mongo.Client, ctx context.Context) {
 	AddAuthGroup(app, client, ctx)
 	AddUserGroup(app, client, ctx)
 	AddPostGroup(app, client, ctx)
+	AddCommentGroup(app, client, ctx)
 }
 
 func AddAuthGroup(app *fiber.App, client *mongo.Client, ctx context.Context) {
@@ -60,5 +62,16 @@ func AddPostGroup(app *fiber.App, client *mongo.Client, ctx context.Context) {
     })
 	postGroup.Delete("/:id", func(c *fiber.Ctx) error {
 		return post.DeletePost(c, client, ctx)
+	})
+	postGroup.Post("/vote/:id", func(c *fiber.Ctx) error {
+		return post.VotePost(c, client, ctx)
+	})
+}
+
+func AddCommentGroup(app *fiber.App, client *mongo.Client, ctx context.Context) {
+	commentGroup := app.Group("/comment")
+
+	commentGroup.Post("/:id", func(c *fiber.Ctx) error {
+		return comment.AddComment(c, client, ctx)
 	})
 }
