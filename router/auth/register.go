@@ -42,7 +42,7 @@ func checkExistingUser(client *mongo.Client, ctx context.Context, email string) 
 	return common.GetUserByEmail(client, ctx, email)
 }
 
-func hashPassword(password string) (string, error) {
+func HashPassword(password string) (string, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(hashedPassword), err
 }
@@ -64,7 +64,7 @@ func RegisterHandler(c *fiber.Ctx, client *mongo.Client, ctx context.Context) er
 	if err == nil && existingUser != nil {
 		return c.Status(400).SendString("A user with this email already exists")
 	}
-	hashedPassword, err := hashPassword(user.Password)
+	hashedPassword, err := HashPassword(user.Password)
 	if err != nil {
 		return c.Status(500).SendString("Failed to hash password")
 	}

@@ -33,4 +33,7 @@ func AddUserGroup(app *fiber.App, client *mongo.Client, ctx context.Context) {
 	userGroup.Get("/me", func(c *fiber.Ctx) error {
 		return user.GetUserInfos(c, client, ctx)
 	})
+	userGroup.Put("/edit", func(c *fiber.Ctx) error {
+		return user.EditUserInfos(c, client, ctx)
+	})
 }
