@@ -4,9 +4,10 @@ package main
 
 import (
 	"fmt"
+	"os"
 
-	"github.com/Taker-Academy/kedubak-novaepitech/router"
 	"github.com/Taker-Academy/kedubak-novaepitech/common"
+	"github.com/Taker-Academy/kedubak-novaepitech/router"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
@@ -22,9 +23,14 @@ func main() {
 	app.Use(cors.New())
 
 	client, ctx := common.ConnectToMongoDB()
-    defer common.DisconnectFromMongoDB(client, ctx)
+	defer common.DisconnectFromMongoDB(client, ctx)
 
 	router.AddGroups(app, client, ctx)
 
-	app.Listen(":8080")
+	var port string
+	port = os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	app.Listen(":" + port)
 }
