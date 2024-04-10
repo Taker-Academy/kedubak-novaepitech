@@ -4,50 +4,68 @@ package user
 
 import (
 	"context"
+	"errors"
 	"net/http"
-	"strings"
-	"fmt"
 	"os"
+	"strings"
 
 	"github.com/Taker-Academy/kedubak-novaepitech/models"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func GetUserInfos(c *fiber.Ctx, client *mongo.Client, ctx context.Context) error {
-	fmt.Println("Get user infos")
+func getAuthorizationToken(c *fiber.Ctx) (string, error) {
 	authHeader := c.Get("Authorization")
 	if authHeader == "" {
-		return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"ok": false, "message": "Missing authorization header"})
+		return "", errors.New("missing authorization header")
 	}
-	tokenStr := strings.Replace(authHeader, "Bearer ", "", -1)
-	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+	return strings.Replace(authHeader, "Bearer ", "", -1), nil
+}
+
+func parseToken(tokenStr string) (*jwt.Token, error) {
+	return jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 		return []byte(os.Getenv("JWT_SECRET_KEY")), nil
 	})
-	if err != nil {
-		fmt.Printf("Invalid token 1: %v\n", err)
-		return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"ok": false, "message": "Invalid token"})
-	}
+}
+
+func getUserIDFromToken(token *jwt.Token) (primitive.ObjectID, error) {
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok || !token.Valid {
-		fmt.Println("Invalid token 2")
-		return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"ok": false, "message": "Invalid token"})
+		return primitive.NilObjectID, errors.New("invalid token")
 	}
-	userID, err := primitive.ObjectIDFromHex(claims["id"].(string))
-	if err != nil {
-		fmt.Printf("Error converting userID to ObjectID: %v\n", err)
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"ok": false, "message": "Internal server error"})
-	}
+	return primitive.ObjectIDFromHex(claims["id"].(string))
+}
+
+func fetchUserFromDatabase(client *mongo.Client, ctx context.Context, userID primitive.ObjectID) (models.User, error) {
 	collection := client.Database("kedubak").Collection("users")
 	var user models.User
-	err = collection.FindOne(ctx, bson.M{"_id": userID}).Decode(&user)
+	err := collection.FindOne(ctx, bson.M{"_id": userID}).Decode(&user)
+	return user, err
+}
+
+func GetUserInfos(c *fiber.Ctx, client *mongo.Client, ctx context.Context) error {
+	tokenStr, err := getAuthorizationToken(c)
 	if err != nil {
-		fmt.Printf("Database error: %v\n", err)
+		return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"ok": false, "message": err.Error()})
+	}
+
+	token, err := parseToken(tokenStr)
+	if err != nil {
+		return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"ok": false, "message": "Invalid token"})
+	}
+
+	userID, err := getUserIDFromToken(token)
+	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"ok": false, "message": "Internal server error"})
 	}
-	fmt.Println("User found")
+
+	user, err := fetchUserFromDatabase(client, ctx, userID)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"ok": false, "message": "Internal server error"})
+	}
+
 	return c.Status(http.StatusOK).JSON(fiber.Map{"ok": true, "data": user})
 }
