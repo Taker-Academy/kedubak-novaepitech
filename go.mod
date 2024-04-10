@@ -8,6 +8,8 @@ require (
 	go.mongodb.org/mongo-driver v1.14.0
 )
 
+require github.com/dgrijalva/jwt-go v3.2.0+incompatible
+
 require (
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect

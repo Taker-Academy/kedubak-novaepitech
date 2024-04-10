@@ -24,7 +24,7 @@ func main() {
 	client, ctx := common.ConnectToMongoDB()
     defer common.DisconnectFromMongoDB(client, ctx)
 
-	router.AddAuthGroup(app, client, ctx)
+	router.AddGroups(app, client, ctx)
 
 	app.Listen(":8080")
 }
