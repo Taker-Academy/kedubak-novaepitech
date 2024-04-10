@@ -36,4 +36,7 @@ func AddUserGroup(app *fiber.App, client *mongo.Client, ctx context.Context) {
 	userGroup.Put("/edit", func(c *fiber.Ctx) error {
 		return user.EditUserInfos(c, client, ctx)
 	})
+	userGroup.Delete("/remove", func(c *fiber.Ctx) error {
+		return user.RemoveUser(c, client, ctx)
+	})
 }
