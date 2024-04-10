@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"time"
+	"os"
 
 	"github.com/Taker-Academy/kedubak-novaepitech/common"
 	"github.com/Taker-Academy/kedubak-novaepitech/models"
@@ -51,7 +52,7 @@ func generateToken(user *models.User) (string, error) {
 		"id":  user.ID,
 		"exp": time.Now().Add(time.Hour * 24).Unix(),
 	})
-	return token.SignedString([]byte("your-secret-key"))
+	return token.SignedString([]byte(os.Getenv("JWT_TOKEN")))
 }
 
 func RegisterHandler(c *fiber.Ctx, client *mongo.Client, ctx context.Context) error {
