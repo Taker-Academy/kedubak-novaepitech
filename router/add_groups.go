@@ -9,11 +9,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"github.com/Taker-Academy/kedubak-novaepitech/router/auth"
 	"github.com/Taker-Academy/kedubak-novaepitech/router/user"
+	"github.com/Taker-Academy/kedubak-novaepitech/router/post"
 )
 
 func AddGroups(app *fiber.App, client *mongo.Client, ctx context.Context) {
 	AddAuthGroup(app, client, ctx)
 	AddUserGroup(app, client, ctx)
+	AddPostGroup(app, client, ctx)
 }
 
 func AddAuthGroup(app *fiber.App, client *mongo.Client, ctx context.Context) {
@@ -38,5 +40,16 @@ func AddUserGroup(app *fiber.App, client *mongo.Client, ctx context.Context) {
 	})
 	userGroup.Delete("/remove", func(c *fiber.Ctx) error {
 		return user.RemoveUser(c, client, ctx)
+	})
+}
+
+func AddPostGroup(app *fiber.App, client *mongo.Client, ctx context.Context) {
+	postGroup := app.Group("/post")
+
+	postGroup.Get("/", func(c *fiber.Ctx) error {
+		return post.GetPosts(c, client, ctx)
+	})
+	postGroup.Post("/", func(c *fiber.Ctx) error {
+		return post.CreatePost(c, client, ctx)
 	})
 }
