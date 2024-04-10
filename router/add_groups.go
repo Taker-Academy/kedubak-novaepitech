@@ -58,4 +58,7 @@ func AddPostGroup(app *fiber.App, client *mongo.Client, ctx context.Context) {
 	postGroup.Get("/:id", func(c *fiber.Ctx) error {
         return post.GetPostByID(c, client, ctx)
     })
+	postGroup.Delete("/:id", func(c *fiber.Ctx) error {
+		return post.DeletePost(c, client, ctx)
+	})
 }
