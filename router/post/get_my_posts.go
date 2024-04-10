@@ -1,47 +1,36 @@
-// router/user/get_posts.go
+// router/user/get_my_posts.go
 
 package post
 
 import (
 	"context"
 	"net/http"
-	"os"
-	"strings"
 
+	"github.com/Taker-Academy/kedubak-novaepitech/models"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"github.com/Taker-Academy/kedubak-novaepitech/models"
 )
 
-func ParseJWTToken(c *fiber.Ctx) (*jwt.Token, error) {
-	tokenString := strings.Split(c.Get("Authorization"), " ")[1]
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return []byte(os.Getenv("JWT_SECRET_KEY")), nil
-	})
-	return token, err
-}
-
-func fetchPostsFromDB(client *mongo.Client, ctx context.Context) (*mongo.Cursor, error) {
+func fetchUserPostsFromDB(client *mongo.Client, ctx context.Context, userID string) (*mongo.Cursor, error) {
 	collection := client.Database("kedubak").Collection("posts")
-	cursor, err := collection.Find(ctx, bson.M{})
+	cursor, err := collection.Find(ctx, bson.M{"userId": userID})
 	return cursor, err
 }
 
-func DecodePosts(cursor *mongo.Cursor, ctx context.Context) ([]models.Post, error) {
-	var posts []models.Post
-	err := cursor.All(ctx, &posts)
-	return posts, err
-}
-
-func GetPosts(c *fiber.Ctx, client *mongo.Client, ctx context.Context) error {
-	_, err := ParseJWTToken(c)
+func GetMyPosts(c *fiber.Ctx, client *mongo.Client, ctx context.Context) error {
+	token, err := ParseJWTToken(c)
 	if err != nil {
 		return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"ok": false, "message": "Invalid JWT token"})
 	}
 
-	cursor, err := fetchPostsFromDB(client, ctx)
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || claims["id"] == nil {
+		return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"ok": false, "message": "Invalid JWT token"})
+	}
+
+	cursor, err := fetchUserPostsFromDB(client, ctx, claims["id"].(string))
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"ok": false, "message": "Internal server error"})
 	}

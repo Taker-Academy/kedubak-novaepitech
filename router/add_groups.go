@@ -52,4 +52,7 @@ func AddPostGroup(app *fiber.App, client *mongo.Client, ctx context.Context) {
 	postGroup.Post("/", func(c *fiber.Ctx) error {
 		return post.CreatePost(c, client, ctx)
 	})
+	postGroup.Get("/me", func(c *fiber.Ctx) error {
+		return post.GetMyPosts(c, client, ctx)
+	})
 }
